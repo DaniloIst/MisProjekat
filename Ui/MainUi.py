@@ -4,6 +4,8 @@ from tkinter import ttk, messagebox
 import sv_ttk
 from firebase_admin import credentials, auth, db
 from tkcalendar import Calendar
+import tkinter as tk
+from tktimepicker import AnalogPicker, AnalogThemes, constants
 
 
 class MainApp(tk.Tk):
@@ -47,10 +49,10 @@ class FirstFrame(tk.Frame):
         login_button = ttk.Button(self, text="Login", command=self.check_login)
 
         login_label.grid(row=0, column=0, columnspan=2, pady=20, padx=80)
-        username_label.grid(row=1, column=0, pady=(40, 10), padx=(0, 20), sticky='e')
-        self.username_entry.grid(row=2, column=0, columnspan=2, pady=10, padx=10, sticky='w')
-        password_label.grid(row=3, column=0, pady=(20, 10), padx=(0, 20), sticky='e')
-        self.password_entry.grid(row=4, column=0, columnspan=2, pady=10, padx=10, sticky='w')
+        username_label.grid(row=1, column=0, pady=(40,10), padx=(20, 20), sticky='e')
+        self.username_entry.grid(row=2, column=0, columnspan=2, pady=(50, 0), padx=(40, 40), sticky='w')
+        password_label.grid(row=3, column=0, pady=(20, 10), padx=(20, 20), sticky='e')
+        self.password_entry.grid(row=4, column=0, columnspan=2, pady=(30, 10), padx=(40, 40), sticky='w')
         login_button.grid(row=5, column=0, columnspan=2, pady=20)
 
         sv_ttk.set_theme("dark")
@@ -59,12 +61,15 @@ class FirstFrame(tk.Frame):
         email = self.username_entry.get()
         password = self.password_entry.get()
         user_id = login(email, password)
+
         if user_id is not None:
             role = checkRole(email)
             if role == "Admin":
                 self.master.change(SecondFrame)
             elif role == "Fitter":
                 self.master.change(FitterFrame)
+            elif role == "Auditor":
+                self.master.change(AuditorFrame)
             else:
                 messagebox.showerror(title="Error", message="Role not found.")
         else:
@@ -175,7 +180,7 @@ class RegisterFrame(tk.Frame):
         self.confirm_password_entry = ttk.Entry(self, show="*")
         self.title_entry = ttk.Entry(self)
 
-        self.role = tk.StringVar(value="Role 1")
+        self.role = tk.StringVar(value="Role")
 
         role_label = ttk.Label(self, text="Role", font=("Helvetica", 14))
         role_checkbox1 = ttk.Checkbutton(self, text="Fitter", variable=self.role, onvalue="Fitter",command=self.toggle_textfield)
@@ -187,22 +192,22 @@ class RegisterFrame(tk.Frame):
 
         RegisterFrame.register_button = ttk.Button(self, text="Register", command=self.register_user)
 
-        register_label.grid(row=0, column=0, columnspan=2, pady=20)
-        name_label.grid(row=1, column=0, pady=10, padx=10, sticky='e')
+        register_label.grid(row=0, column=0, columnspan=2,pady = 30,padx=(50,40))
+        name_label.grid(row=1, column=0, pady=10, padx=(20,5), sticky='e')
         self.name_entry.grid(row=1, column=1, pady=10, sticky='w')
-        lastname_label.grid(row=2, column=0, pady=10, padx=10, sticky='e')
+        lastname_label.grid(row=2, column=0, pady=10, padx=(20,5), sticky='e')
         self.last_entry.grid(row=2, column=1, pady=10, sticky='w')
-        username_label.grid(row=3, column=0, pady=10, padx=10, sticky='e')
+        username_label.grid(row=3, column=0, pady=10, padx=(20,5), sticky='e')
         self.username_entry.grid(row=3, column=1, pady=10, sticky='w')
-        email_label.grid(row=4, column=0, pady=10, padx=10, sticky='e')
+        email_label.grid(row=4, column=0, pady=10, padx=(20,5), sticky='e')
         self.email_entry.grid(row=4, column=1, pady=10, sticky='w')
-        password_label.grid(row=5, column=0, pady=10, padx=10, sticky='e')
+        password_label.grid(row=5, column=0, pady=10, padx=(20,5), sticky='e')
         self.password_entry.grid(row=5, column=1, pady=10, sticky='w')
-        confirm_password_label.grid(row=6, column=0, pady=10, padx=10, sticky='e')
+        confirm_password_label.grid(row=6, column=0, pady=10, padx=(20,5), sticky='e')
         self.confirm_password_entry.grid(row=6, column=1, pady=10, sticky='w')
-        title_label.grid(row=7, column=0, pady=10, padx=10, sticky='e')
+        title_label.grid(row=7, column=0, pady=10, padx=(20,5), sticky='e')
         self.title_entry.grid(row=7, column=1, pady=10, sticky='w')
-        role_label.grid(row=8, column=0, pady=10, padx=10, sticky='e')
+        role_label.grid(row=8, column=0, pady=10, padx=(20,5), sticky='e')
         role_checkbox1.grid(row=8, column=1, pady=10, sticky='w')
         role_checkbox2.grid(row=8, column=2, pady=10, sticky='w')
         RegisterFrame.register_button.grid(row=9, column=0, columnspan=2, pady=20)
@@ -229,7 +234,7 @@ class RegisterFrame(tk.Frame):
         confirm_password = self.confirm_password_entry.get()
         title = self.title_entry.get()
         role = self.role.get()
-        additional_field = self.additional_field_entry.get() if role == "Audiolog" else None
+        additional_field = self.role.get() if role == "Audiolog" else None
 
         if password != confirm_password:
             messagebox.showerror(title="Error", message="Passwords do not match.")
@@ -276,19 +281,82 @@ class FitterFrame(tk.Frame):
 
         button_width = 20
 
-        register_button = ttk.Button(
+        appointment_button = ttk.Button(
             self, text="Make an appointment", style='TButton', width=button_width,
             command=lambda: self.master.change(TerminFrame))
+        patient_button = ttk.Button(
+            self, text="Enter a client", style='TButton', width=button_width,
+            command=lambda: self.master.change(PatientsFrame))
         logout_button = ttk.Button(
             self, text="Log out", style='TButton', width=button_width,
             command=lambda: master.destroy())
 
-        register_button.grid(row=1, column=0, pady=40)
-        logout_button.grid(row=2, column=0, pady=40)
+        appointment_button.grid(row=1, column=0, pady=40)
+        patient_button.grid(row=2, column=0, pady=40)
+        logout_button.grid(row=3, column=0, pady=40)
 
         self.grid_columnconfigure(0, weight=1)
 
         sv_ttk.set_theme("dark")
+
+
+class PatientsFrame(tk.Frame):
+    def __init__(self, master=None, **kwargs):
+        super().__init__(master, **kwargs)
+
+        termin_label = ttk.Label(self, text="Client", font=("Helvetica", 24))
+        name_label = ttk.Label(self, text="First name ", font=("Helvetica", 14))
+        lastname_label = ttk.Label(self, text="Last name", font=("Helvetica", 14))
+        address_label = ttk.Label(self, text="Adress ", font=("Helvetica", 14))
+        date_of_birth_label = ttk.Label(self, text="Date of birth ", font=("Helvetica", 14))
+
+        self.name_entry = ttk.Entry(self)
+        self.last_entry = ttk.Entry(self)
+        self.address_entry = ttk.Entry(self)
+        self.calendar = Calendar(self, selectmode='day', year=datetime.today().year, month=datetime.today().month,day=datetime.today().day)
+
+        self.termin_button = ttk.Button(self, text="Add a client", command=self.dodaj_klijenta)
+
+        termin_label.grid(row=0, column=0, columnspan=2, pady=20)
+        name_label.grid(row=1, column=0, pady=10, padx=10, sticky='e')
+        self.name_entry.grid(row=1, column=1, pady=10, sticky='w')
+        lastname_label.grid(row=2, column=0, pady=10, padx=10, sticky='e')
+        self.last_entry.grid(row=2, column=1, pady=10, sticky='w')
+        address_label.grid(row=3, column=0, pady=10, padx=10, sticky='e')
+        self.address_entry.grid(row=3, column=1, pady=10, sticky='w')
+        date_of_birth_label.grid(row=4, column=1, pady=10, sticky='w')
+        self.calendar.grid(row=5, column=1, columnspan=2, pady=20)
+
+        self.termin_button.grid(row=6, column=0, columnspan=2, pady=20)
+
+        sv_ttk.set_theme("dark")
+
+    def dodaj_klijenta(self):
+        name = self.name_entry.get()
+        lastname = self.last_entry.get()
+        address = self.address_entry.get()
+        date = self.calendar.selection_get()
+
+        if dodaj_klijenta(address, date, name, lastname):
+            messagebox.showinfo(title="Success", message="Client was successfully added.")
+            self.master.change(FitterFrame)
+        else:
+            messagebox.showerror(title="Error", message="Client was not added.")
+
+def dodaj_klijenta(address,date, name, lastname):
+        try:
+            termin_data = {
+                "Date": str(date),
+                "name": name,
+                "lastname": lastname,
+                "Address": address
+            }
+            db.reference("/Klijenti").push(termin_data)
+            return True
+
+        except Exception as e:
+            print(f'Error while making the appointment : {e}')
+            return None
 
 
 class TerminFrame(tk.Frame):
@@ -298,13 +366,24 @@ class TerminFrame(tk.Frame):
         termin_label = ttk.Label(self, text="Appointment", font=("Helvetica", 24))
         name_label = ttk.Label(self, text="First name ", font=("Helvetica", 14))
         lastname_label = ttk.Label(self, text="Last name", font=("Helvetica", 14))
-        name_of_doctor_label = ttk.Label(self, text="Auditor ", font=("Helvetica", 14))
+        name_of_doctor_label = ttk.Label(self, text="Audiolog ", font=("Helvetica", 14))
 
         self.name_entry = ttk.Entry(self)
         self.last_entry = ttk.Entry(self)
         self.name_of_doctor_entry = ttk.Entry(self)
-        self.calendar = Calendar(self, selectmode='day', year=datetime.today().year, month=datetime.today().month,
-                                 day=datetime.today().day)
+        self.calendar = Calendar(self, selectmode='day', year=datetime.today().year, month=datetime.today().month,day=datetime.today().day)
+
+        hours = [f"{i:02d}" for i in range(1, 13)]
+        minutes = ["00", "15", "30", "45"]
+        periods = ["AM", "PM"]
+
+        self.hour_combobox = ttk.Combobox(self, values=hours, width=3)
+        self.minute_combobox = ttk.Combobox(self, values=minutes, width=3)
+        self.period_combobox = ttk.Combobox(self, values=periods, width=3)
+
+        self.hour_combobox.set(hours[0])
+        self.minute_combobox.set(minutes[0])
+        self.period_combobox.set(periods[0])
 
         TerminFrame.termin_button = ttk.Button(self, text="Add an appointment", command=self.dodaj_termin)
 
@@ -316,32 +395,40 @@ class TerminFrame(tk.Frame):
         name_of_doctor_label.grid(row=3, column=0, pady=10, padx=10, sticky='e')
         self.name_of_doctor_entry.grid(row=3, column=1, pady=10, sticky='w')
         self.calendar.grid(row=4, column=0, columnspan=2, pady=20)
-        TerminFrame.termin_button.grid(row=5, column=0, columnspan=2, pady=20)
+
+        time_label = ttk.Label(self, text="Time:")
+        time_label.grid(row=5, column=0, pady=10, padx=10, sticky='e')
+
+        self.hour_combobox.grid(row=5, column=1, sticky='w')
+        self.minute_combobox.grid(row=5, column=1, padx=(40, 0), sticky='w')
+        self.period_combobox.grid(row=5, column=1, padx=(80, 0), sticky='w')
+
+        TerminFrame.termin_button.grid(row=6, column=0, columnspan=2, pady=20)
 
         sv_ttk.set_theme("dark")
 
-        self.grid_rowconfigure(8, minsize=40)
 
     def dodaj_termin(self):
         name = self.name_entry.get()
         lastname = self.last_entry.get()
         doctor = self.name_of_doctor_entry.get()
         date = self.calendar.selection_get()
+        time = f"{self.hour_combobox.get()}:{self.minute_combobox.get()} {self.period_combobox.get()}"
 
-        if dodaj_termin(doctor, date, name, lastname):
+        if dodaj_termin(doctor, date, time, name, lastname):
             messagebox.showinfo(title="Success", message="Appointment was successfully added.")
             self.master.change(FitterFrame)
         else:
             messagebox.showerror(title="Error", message="Appointment was not added.")
 
-
-def dodaj_termin(doctor, date, name, lastname):
+def dodaj_termin(doctor, date,time, name, lastname):
     try:
         termin_data = {
             "Datum": str(date),
             "Audiolog": doctor,
             "Ime Pacijenta": name,
-            "Prezime Pacijenta": lastname
+            "Prezime Pacijenta": lastname,
+            "Time": str(time)
         }
 
         db.reference("/Termini").push(termin_data)
@@ -359,24 +446,166 @@ class AuditorFrame(tk.Frame):
 
         button_width = 20
 
-        register_button = ttk.Button(
-            self, text="Make an appointment", style='TButton', width=button_width,
-            command=lambda: self.master.change(TerminFrame))
+        appointments_button = ttk.Button(
+            self, text="Show all appointments", style='TButton', width=button_width,
+            command=lambda: show_apoitments_window())
+        clients_button = ttk.Button(
+            self, text="Show all clients", style='TButton', width=button_width,
+            command=lambda: show_clients_window(master))
         logout_button = ttk.Button(
             self, text="Log out", style='TButton', width=button_width,
             command=lambda: master.destroy())
 
-        register_button.grid(row=1, column=0, pady=40)
-        logout_button.grid(row=2, column=0, pady=40)
+        appointments_button.grid(row=1, column=0, pady=40)
+        clients_button.grid(row=2, column=0, pady=40)
+        logout_button.grid(row=3, column=0, pady=40)
 
         self.grid_columnconfigure(0, weight=1)
 
         sv_ttk.set_theme("dark")
 
+def show_apoitments_window():
+    window = tk.Toplevel()
+    window.title("Appointments List")
+    window.geometry('800x600')
+
+    columns = ('First Name', 'Last Name', 'Time', 'Audiolog')
+    tree = ttk.Treeview(window, columns=columns, show='headings')
+    ref = db.reference("/Termini")
+    patients = ref.get()
+    if isinstance(patients, dict):
+        for col in columns:
+            tree.heading(col, text=col)
+            tree.column(col, anchor=tk.CENTER)
+
+        tree.pack(fill=tk.BOTH, expand=True)
+
+        scroll_y = ttk.Scrollbar(window, orient=tk.VERTICAL, command=tree.yview)
+        tree.configure(yscrollcommand=scroll_y.set)
+        scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
+
+        scroll_x = ttk.Scrollbar(window, orient=tk.HORIZONTAL, command=tree.xview)
+        tree.configure(xscrollcommand=scroll_x.set)
+        scroll_x.pack(side=tk.BOTTOM, fill=tk.X)
+
+        calendar_frame = ttk.Frame(window)
+        calendar_frame.pack(pady=10)
+
+
+        cal = Calendar(window, selectmode='day', year=datetime.today().year, month=datetime.today().month,day=datetime.today().day)
+        cal.pack()
+
+
+        for patient_id, patient_data in patients.items():
+            tree.insert('', tk.END, values=(
+                patient_data.get('Ime Pacijenta', ''),
+                patient_data.get('Prezime Pacijenta', ''),
+                patient_data.get('Time', ''),
+                patient_data.get('Audiolog', '')
+            ))
+
+        sv_ttk.set_theme("dark")
+    else:
+        messagebox.showerror("Error", "Failed to retrieve data from the database.")
+
+
+def show_clients_window(master):
+    def show_patient_details(event):
+        item = tree.selection()[0]
+        patient_details = tree.item(item, "values")
+
+        def on_select_dropdown(event):
+            selected_option = dropdown_var.get()
+            print("Selected Option:", selected_option)
+
+        def on_select_template(event):
+            selected_template = template_var.get()
+            textbox.delete("1.0", tk.END)
+            textbox.insert(tk.END, templates[selected_template])
+
+        popup_window = tk.Toplevel(window)
+        popup_window.title("Patient Details")
+        popup_window.geometry('400x350')
+
+        for i, detail in enumerate(patient_details):
+            ttk.Label(popup_window, text=columns[i]).grid(row=i, column=0, padx=10, pady=5, sticky="w")
+            ttk.Label(popup_window, text=detail).grid(row=i, column=1, padx=10, pady=5, sticky="w")
+
+        dropdown_label = ttk.Label(popup_window, text="Select an option:")
+        dropdown_label.grid(row=i + 1, column=0, padx=10, pady=5, sticky="w")
+
+        dropdown_options = ["Slusni aparat 1", "Slusni aparat 2", "Slusni aparat 3"]
+        dropdown_var = tk.StringVar(popup_window)
+        dropdown_var.set(dropdown_options[0])
+        dropdown_menu = ttk.Combobox(popup_window, textvariable=dropdown_var, values=dropdown_options)
+        dropdown_menu.grid(row=i + 1, column=1, padx=10, pady=5, sticky="w")
+        dropdown_menu.bind("<<ComboboxSelected>>", on_select_dropdown)
+
+        template_label = ttk.Label(popup_window, text="Select a template:")
+        template_label.grid(row=i + 2, column=0, padx=10, pady=5, sticky="w")
+
+        template_options = ["Template 1", "Template 2", "Template 3"]
+        templates = {
+            "Template 1": "Tmp1.",
+            "Template 2": "Tmp2.",
+            "Template 3": "Tmp3."
+        }
+        template_var = tk.StringVar(popup_window)
+        template_var.set(template_options[0])
+        template_menu = ttk.Combobox(popup_window, textvariable=template_var, values=template_options)
+        template_menu.grid(row=i + 2, column=1, padx=10, pady=5, sticky="w")
+        template_menu.bind("<<ComboboxSelected>>", on_select_template)
+
+        textbox = tk.Text(popup_window, height=5, width=40)
+        textbox.grid(row=i + 3, column=0, columnspan=2, padx=10, pady=5)
+        textbox.insert(tk.END, templates[template_options[0]])
+
+        button = ttk.Button(popup_window, text="Confirm", command=lambda: messagebox.showinfo("Success", "Email sent."))
+        button.grid(row=i + 4, column=0, columnspan=2, pady=10)
+
+    window = tk.Toplevel(master)
+    window.title("Clients List")
+    window.geometry('800x600')
+
+    columns = ('First Name', 'Last Name', 'Address', 'Date-of-Birth')
+    tree = ttk.Treeview(window, columns=columns, show='headings')
+    ref = db.reference("/Klijenti")
+    patients = ref.get()
+    if isinstance(patients, dict):
+        for col in columns:
+            tree.heading(col, text=col)
+            tree.column(col, anchor=tk.CENTER)
+
+        tree.pack(fill=tk.BOTH, expand=True)
+
+        scroll_y = ttk.Scrollbar(window, orient=tk.VERTICAL, command=tree.yview)
+        tree.configure(yscrollcommand=scroll_y.set)
+        scroll_y.pack(side=tk.RIGHT, fill=tk.Y)
+
+        scroll_x = ttk.Scrollbar(window, orient=tk.HORIZONTAL, command=tree.xview)
+        tree.configure(xscrollcommand=scroll_x.set)
+        scroll_x.pack(side=tk.BOTTOM, fill=tk.X)
+
+        for patient_id, patient_data in patients.items():
+            tree.insert('', tk.END, values=(
+                patient_data.get('name', ''),
+                patient_data.get('lastname', ''),
+                patient_data.get('Address', ''),
+                patient_data.get('Date', '')
+            ))
+
+        tree.bind("<Double-1>", show_patient_details)
+
+        sv_ttk.set_theme("dark")
+    else:
+        messagebox.showerror("Error", "Failed to retrieve data from the database.")
+
 
 #pristup kalendaru // fiter
 #Doda termin(pregleda) Ime prez klijenta i vreme i koji audiolog
-#Ako postoji klijent u bazi onda ponudi se ponudi da se koristi taj klijent
+#Todo Ako postoji klijent u bazi onda ponudi se ponudi da se koristi taj klijent
 
 #Audiolog moze da vidi listu klijenata
 #kada klikne na klijenta bira slusni aparat i kad odabere slusni aparat  i bira jedan od templateova za slanje mejla
+
+#ToDo mene je malko mrzelo u momentu ali slobodno rasporedite klase u odvojene fajlove
