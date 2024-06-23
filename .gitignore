@@ -4,3 +4,6 @@
 /users/
 /venv/
 .idea
+.gitattributes
+.gitignore
+main.spec
