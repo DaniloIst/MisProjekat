@@ -1,4 +1,4 @@
-# Modelovanje Informacionih Sistema (MIS) - Projekat
+# Modeliranje Informacionih Sistema (MIS) - Projekat
 
 ## Pregled Projekta
 Ovaj projekat podrazumeva dizajniranje i implementaciju sveobuhvatnog informacionog sistema koji zadovoljava specifične zahteve za upravljanje, obradu i preuzimanje podataka. Konkretno, modelirana je audiološka agencija.
