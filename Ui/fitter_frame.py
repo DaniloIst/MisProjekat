@@ -35,7 +35,7 @@ class FitterFrame(tk.Frame):
 class PatientsFrame(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
-
+        master.geometry("600x540")
         termin_label = ttk.Label(self, text="Client", font=("Helvetica", 24))
         name_label = ttk.Label(self, text="First name ", font=("Helvetica", 14))
         lastname_label = ttk.Label(self, text="Last name", font=("Helvetica", 14))
@@ -94,7 +94,7 @@ class PatientsFrame(tk.Frame):
 class TerminFrame(tk.Frame):
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
-
+        master.geometry("600x540")
         termin_label = ttk.Label(self, text="Appointment", font=("Helvetica", 24))
         name_label = ttk.Label(self, text="First name ", font=("Helvetica", 14))
         lastname_label = ttk.Label(self, text="Last name", font=("Helvetica", 14))

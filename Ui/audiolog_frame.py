@@ -15,7 +15,7 @@ class AuditorFrame(tk.Frame):
 
         appointments_button = ttk.Button(
             self, text="Show all appointments", style='TButton', width=button_width,
-            command=lambda: self.show_apoitments_window())
+            command=lambda: self.show_appointments_window())
         clients_button = ttk.Button(
             self, text="Show all clients", style='TButton', width=button_width,
             command=lambda: self.show_clients_window(master))
@@ -31,7 +31,28 @@ class AuditorFrame(tk.Frame):
 
         sv_ttk.set_theme("dark")
 
-    def show_apoitments_window(self):
+    def show_appointments_window(self):
+        def on_date_select(event):
+            selected_date = cal.get_date()
+            formatted_selected_date = datetime.strptime(selected_date, "%m/%d/%y").strftime("%Y-%m-%d")
+            print("Selected Date:", formatted_selected_date)  # Print the selected date in the correct format
+            update_treeview(formatted_selected_date)
+
+        def update_treeview(date=None):
+            for item in tree.get_children():
+                tree.delete(item)
+            if isinstance(patients, dict):
+                for patient_id, patient_data in patients.items():
+                    appointment_date = patient_data.get('Datum', '')
+                    if date is None or appointment_date == date:
+                        tree.insert('', tk.END, values=(
+                            patient_data.get('Ime Pacijenta', ''),
+                            patient_data.get('Prezime Pacijenta', ''),
+                            patient_data.get('Time', ''),
+                            patient_data.get('Audiolog', '')
+                        ))
+                        print("Matching appointment:", patient_data)  # Print matching appointments for debugging
+
         window = tk.Toplevel()
         window.title("Appointments List")
         window.geometry('800x600')
@@ -60,14 +81,9 @@ class AuditorFrame(tk.Frame):
 
             cal = Calendar(window, selectmode='day', year=datetime.today().year, month=datetime.today().month, day=datetime.today().day)
             cal.pack()
+            cal.bind("<<CalendarSelected>>", on_date_select)
 
-            for patient_id, patient_data in patients.items():
-                tree.insert('', tk.END, values=(
-                    patient_data.get('Ime Pacijenta', ''),
-                    patient_data.get('Prezime Pacijenta', ''),
-                    patient_data.get('Time', ''),
-                    patient_data.get('Audiolog', '')
-                ))
+            update_treeview()  # Show all appointments initially
 
             sv_ttk.set_theme("dark")
         else:
@@ -80,7 +96,7 @@ class AuditorFrame(tk.Frame):
 
             def on_select_dropdown(event):
                 selected_option = dropdown_var.get()
-                print("Selected Option:", selected_option)
+
 
             def on_select_template(event):
                 selected_template = template_var.get()

@@ -69,7 +69,7 @@ class RegisterFrame(tk.Frame):
     register_button = None
     def __init__(self, master=None, **kwargs):
         super().__init__(master, **kwargs)
-
+        master.geometry("800x640")
         register_label = ttk.Label(self, text="Register", font=("Helvetica", 24))
         name_label = ttk.Label(self, text="First name", font=("Helvetica", 14))
         lastname_label = ttk.Label(self, text="Last name", font=("Helvetica", 14))
