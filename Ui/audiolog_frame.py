@@ -35,7 +35,7 @@ class AuditorFrame(tk.Frame):
         def on_date_select(event):
             selected_date = cal.get_date()
             formatted_selected_date = datetime.strptime(selected_date, "%m/%d/%y").strftime("%Y-%m-%d")
-            print("Selected Date:", formatted_selected_date)  # Print the selected date in the correct format
+            print("Selected Date:", formatted_selected_date)
             update_treeview(formatted_selected_date)
 
         def update_treeview(date=None):
@@ -51,7 +51,7 @@ class AuditorFrame(tk.Frame):
                             patient_data.get('Time', ''),
                             patient_data.get('Audiolog', '')
                         ))
-                        print("Matching appointment:", patient_data)  # Print matching appointments for debugging
+                        print("Matching appointment:", patient_data)
 
         window = tk.Toplevel()
         window.title("Appointments List")
@@ -83,7 +83,7 @@ class AuditorFrame(tk.Frame):
             cal.pack()
             cal.bind("<<CalendarSelected>>", on_date_select)
 
-            update_treeview()  # Show all appointments initially
+            update_treeview()
 
             sv_ttk.set_theme("dark")
         else:
